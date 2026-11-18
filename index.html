@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S.</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #020914;
+  color: #8eeaff;
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 5%;
+  border-bottom: 1px solid #075477;
+  letter-spacing: 3px;
+}
+
+.status { color: #39ffad; font-size: 12px; }
+
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+h1 {
+  letter-spacing: 10px;
+  font-size: 34px;
+  text-shadow: 0 0 20px #00cfff;
+}
+
+.clock {
+  font-size: 35px;
+  margin: 15px;
+  color: white;
+}
+
+.reactor {
+  width: 230px;
+  height: 230px;
+  border: 3px solid #20cfff;
+  border-radius: 50%;
+  margin: 35px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px #008cff,
+              inset 0 0 35px #007cbb;
+  animation: pulse 3s infinite;
+}
+
+.core {
+  width: 100px;
+  height: 100px;
+  border: 3px solid #a4f4ff;
+  border-radius: 50%;
+  box-shadow: 0 0 35px #00bfff;
+  background: radial-gradient(#d9ffff, #008cff, #002c60);
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 45px #00cfff,
+                inset 0 0 50px #007cbb;
+  }
+}
+
+.panel {
+  background: #041626;
+  border: 1px solid #08749d;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 650px;
+  text-align: left;
+}
+
+#response {
+  min-height: 55px;
+  line-height: 1.6;
+}
+
+input {
+  width: 75%;
+  padding: 14px;
+  background: #061b2c;
+  border: 1px solid #0785b6;
+  color: white;
+  border-radius: 6px;
+}
+
+button {
+  padding: 13px 18px;
+  margin: 5px;
+  background: #063c59;
+  border: 1px solid #20cfff;
+  color: #a9efff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #08749d;
+}
+
+button:focus-visible, input:focus-visible {
+  outline: 2px solid white;
+}
+
+.small {
+  color: #6a9eb5;
+  font-size: 12px;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #47788e;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>STARK INDUSTRIES</div>
+  <div class="status" id="status">● SYSTEM ONLINE</div>
+</header>
+
+<main>
+  <h1>J.A.R.V.I.S.</h1>
+  <div>JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+
+  <div class="clock" id="clock">00:00:00</div>
+  <div id="date"></div>
+
+  <div class="reactor">
+    <div class="core"></div>
+  </div>
+
+  <div class="panel">
+    <h3>ASSISTANT RESPONSE</h3>
+    <div id="response">
+      Good evening. JARVIS systems are online.
+      How may I assist you?
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>COMMAND CENTRE</h3>
+    <input id="command"
+      placeholder="Enter a command..."
+      onkeydown="if(event.key==='Enter')sendCommand()">
+
+    <button onclick="sendCommand()">SEND</button>
+    <button onclick="listen()">🎙 SPEAK</button>
+    <button onclick="stopSpeaking()">STOP VOICE</button>
+    <p class="small" id="micStatus">Microphone: Standby</p>
+  </div>
+
+  <div class="panel">
+    <h3>SYSTEM INFORMATION</h3>
+    <p>Core: <span class="status">ONLINE</span></p>
+    <p>Interface: <span class="status">ACTIVE</span></p>
+    <p>Voice: <span class="status">READY</span></p>
+    <p>AI connection: <span style="color:#ffcf70">NOT CONNECTED</span></p>
+  </div>
+
+  <div class="small">
+    INITIAL DEVELOPMENT BUILD // PROJECT JARVIS
+  </div>
+</main>
+
+<footer>STARK INDUSTRIES © J.A.R.V.I.S.</footer>
+
+<script>
+const response = document.getElementById("response");
+const status = document.getElementById("status");
+
+function updateClock() {
+  const now = new Date();
+
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString("en-AU");
+
+  document.getElementById("date").textContent =
+    now.toLocaleDateString("en-AU", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// British English voice selection
+function speak(text) {
+  if (!("speechSynthesis" in window)) {
+    response.textContent = text;
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-GB";
+  speech.rate = 0.93;
+  speech.pitch = 0.85;
+
+  const voices = window.speechSynthesis.getVoices();
+
+  const britishVoice = voices.find(v =>
+    v.lang.toLowerCase() === "en-gb"
+  );
+
+  if (britishVoice) speech.voice = britishVoice;
+
+  window.speechSynthesis.speak(speech);
+}
+
+function answer(text) {
+  response.textContent = text;
+  speak(text);
+}
+
+// Basic starter commands
+function processCommand(command) {
+  const cmd = command.toLowerCase().trim();
+
+  if (!cmd) return;
+
+  if (cmd.includes("hello") || cmd.includes("hi jarvis")) {
+    answer("Good day. JARVIS is at your service.");
+  }
+
+  else if (cmd.includes("time")) {
+    answer("The current time is " +
+      new Date().toLocaleTimeString("en-AU"));
+  }
+
+  else if (cmd.includes("date")) {
+    answer("Today is " +
+      new Date().toLocaleDateString("en-AU", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }));
+  }
+
+  else if (cmd.includes("your name")) {
+    answer("I am JARVIS, your personal digital assistant.");
+  }
+
+  else if (cmd.includes("how are you")) {
+    answer("All systems are operating within normal parameters.");
+  }
+
+  else if (cmd.includes("system status")) {
+    answer("All local interface systems are operational. AI connection is awaiting configuration.");
+  }
+
+  else if (cmd.includes("help")) {
+    answer("Available commands include hello, time, date, your name, how are you, and system status.");
+  }
+
+  else if (cmd.includes("goodbye")) {
+    answer("Until next time. JARVIS standing by.");
+  }
+
+  else {
+    answer("I have received your request. My advanced AI connection has not yet been configured.");
+  }
+}
+
+function sendCommand() {
+  const input = document.getElementById("command");
+  const text = input.value;
+
+  if (!text.trim()) return;
+
+  response.textContent = "YOU: " + text;
+  input.value = "";
+
+  processCommand(text);
+}
+
+// Voice recognition
+function listen() {
+  const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!Recognition) {
+    document.getElementById("micStatus").textContent =
+      "Speech recognition is unavailable in this browser.";
+    return;
+  }
+
+  const recognition = new Recognition();
+  recognition.lang = "en-GB";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    status.textContent = "● LISTENING";
+    document.getElementById("micStatus").textContent =
+      "Microphone: Listening...";
+  };
+
+  recognition.onresult = event => {
+    const text = event.results[0][0].transcript;
+    document.getElementById("command").value = text;
+    processCommand(text);
+  };
+
+  recognition.onerror = () => {
+    document.getElementById("micStatus").textContent =
+      "Microphone error. Check browser permissions.";
+  };
+
+  recognition.onend = () => {
+    status.textContent = "● SYSTEM ONLINE";
+    document.getElementById("micStatus").textContent =
+      "Microphone: Standby";
+  };
+
+  recognition.start();
+}
+
+function stopSpeaking() {
+  window.speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>
