@@ -224,6 +224,38 @@ function loadVoices() {
 
   selector.innerHTML = "";
 
+  voices.forEach((voice, index) => {
+    const option = document.createElement("option");
+
+    option.value = index;
+    option.textContent =
+      voice.name + " (" + voice.lang + ")";
+
+    selector.appendChild(option);
+  });
+
+  const britishIndex = voices.findIndex(v =>
+    v.lang.toLowerCase() === "en-gb"
+  );
+
+  if (britishIndex >= 0) {
+    selector.value = britishIndex;
+  }
+
+  jarvisVoice = voices[selector.value] || null;
+}
+
+speechSynthesis.addEventListener(
+  "voiceschanged",
+  loadVoices
+);
+
+loadVoices();
+  const voices = speechSynthesis.getVoices();
+  const selector = document.getElementById("voiceSelect");
+
+  selector.innerHTML = "";
+
   const britishVoices = voices.filter(v =>
     v.lang.toLowerCase() === "en-gb"
   );
