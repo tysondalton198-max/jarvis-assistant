@@ -216,7 +216,70 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // British English voice selection
+let jarvisVoice = null;
+
+function loadVoices() {
+  const voices = speechSynthesis.getVoices();
+  const selector = document.getElementById("voiceSelect");
+
+  selector.innerHTML = "";
+
+  const britishVoices = voices.filter(v =>
+    v.lang.toLowerCase() === "en-gb"
+  );
+
+  britishVoices.forEach((voice, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = voice.name;
+    selector.appendChild(option);
+  });
+
+  // Prefer a voice explicitly labelled Male, if available
+  const maleIndex = britishVoices.findIndex(v =>
+    /male/i.test(v.name)
+  );
+
+  if (maleIndex >= 0) {
+    selector.value = maleIndex;
+  }
+
+  jarvisVoice = britishVoices[selector.value] || null;
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function testVoice() {
+  const voices = speechSynthesis.getVoices();
+  const british = voices.filter(v =>
+    v.lang.toLowerCase() === "en-gb"
+  );
+
+  const selected = british[
+    document.getElementById("voiceSelect").value
+  ];
+
+  if (!selected) {
+    response.textContent = "No British voice is available.";
+    return;
+  }
+
+  jarvisVoice = selected;
+  speak("Good evening. JARVIS systems are fully operational.");
+}
+
 function speak(text) {
+  speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-GB";
+  speech.rate = 0.90;
+  speech.pitch = 0.85;
+
+  speech.voice = jarvisVoice;
+  speechSynthesis.speak(speech);
+}
   if (!("speechSynthesis" in window)) {
     response.textContent = text;
     return;
